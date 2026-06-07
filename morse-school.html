@@ -1,0 +1,2044 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="Learn Morse code with interactive lessons, tap training, listening practice, and challenge modes.">
+  <title>Morse School — Operator Training</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Spectral:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+
+  <style>
+    /* ═══════════════════════════════════════════════════════
+       DESIGN TOKENS
+    ═══════════════════════════════════════════════════════ */
+    :root {
+      --bg:          #0d0f0d;
+      --bg-raised:   #141714;
+      --bg-panel:    #191d19;
+      --bg-card:     #1e231e;
+      --bg-inset:    #111311;
+
+      --amber:       #f5a623;
+      --amber-dim:   #c47d10;
+      --amber-glow:  rgba(245,166,35,0.18);
+      --green:       #3de06a;
+      --green-dim:   #1e8040;
+      --green-glow:  rgba(61,224,106,0.15);
+      --red:         #e05252;
+      --red-dim:     #802020;
+
+      --text-hi:     #e8ede8;
+      --text-mid:    #8fa88f;
+      --text-lo:     #4a5e4a;
+      --text-inv:    #0d0f0d;
+
+      --border:      #263326;
+      --border-hi:   #3a4f3a;
+
+      --radius-sm:   6px;
+      --radius-md:   12px;
+      --radius-lg:   20px;
+
+      --shadow-sm:   0 2px 8px rgba(0,0,0,0.4);
+      --shadow-md:   0 6px 24px rgba(0,0,0,0.6);
+      --shadow-lg:   0 16px 48px rgba(0,0,0,0.8);
+
+      --font-display: 'Rajdhani', sans-serif;
+      --font-mono:    'Share Tech Mono', monospace;
+      --font-serif:   'Spectral', serif;
+
+      --transition:  0.18s cubic-bezier(0.4, 0, 0.2, 1);
+
+      /* Mobile safe area */
+      --safe-b: env(safe-area-inset-bottom, 0px);
+      --safe-l: env(safe-area-inset-left, 0px);
+      --safe-r: env(safe-area-inset-right, 0px);
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       RESET & BASE
+    ═══════════════════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { height: 100%; -webkit-text-size-adjust: 100%; }
+
+    body {
+      background: var(--bg);
+      color: var(--text-hi);
+      font-family: var(--font-mono);
+      line-height: 1.6;
+      min-height: 100%;
+      /* dvh for mobile browser chrome */
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Grain overlay for depth */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.4;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       SCROLLBAR
+    ═══════════════════════════════════════════════════════ */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-inset); }
+    ::-webkit-scrollbar-thumb { background: var(--border-hi); border-radius: 3px; }
+
+    /* ═══════════════════════════════════════════════════════
+       FOCUS INDICATORS
+    ═══════════════════════════════════════════════════════ */
+    :focus-visible {
+      outline: 2px solid var(--amber);
+      outline-offset: 3px;
+      border-radius: var(--radius-sm);
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       HEADER
+    ═══════════════════════════════════════════════════════ */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(13,15,13,0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 clamp(12px, 3vw, 24px);
+      padding-left: calc(clamp(12px, 3vw, 24px) + var(--safe-l));
+      padding-right: calc(clamp(12px, 3vw, 24px) + var(--safe-r));
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-height: 60px;
+    }
+
+    .logo {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: clamp(1.1rem, 3vw, 1.5rem);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--text-hi);
+      white-space: nowrap;
+    }
+
+    .logo-dot {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+    .logo-dot span {
+      display: inline-block;
+      background: var(--amber);
+      border-radius: 50%;
+    }
+    .logo-dot span:nth-child(1) { width: 6px; height: 6px; }
+    .logo-dot span:nth-child(2) { width: 18px; height: 6px; border-radius: 3px; }
+
+    .logo-text em { color: var(--amber); font-style: normal; }
+
+    .header-controls {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .ctrl-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 4px 10px;
+    }
+
+    .ctrl-group label {
+      font-size: 0.72rem;
+      color: var(--text-mid);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      white-space: nowrap;
+    }
+
+    .ctrl-group input {
+      width: 52px;
+      background: transparent;
+      border: none;
+      color: var(--amber);
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      text-align: center;
+      padding: 0;
+    }
+    .ctrl-group input:focus { outline: none; }
+    .ctrl-group input::-webkit-inner-spin-button,
+    .ctrl-group input::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+    /* ═══════════════════════════════════════════════════════
+       NAV TABS
+    ═══════════════════════════════════════════════════════ */
+    nav {
+      position: sticky;
+      top: 60px;
+      z-index: 90;
+      background: var(--bg-raised);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    nav::-webkit-scrollbar { display: none; }
+
+    .tab-btn {
+      flex-shrink: 0;
+      scroll-snap-align: start;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--text-lo);
+      padding: 14px clamp(14px, 2.5vw, 24px);
+      cursor: pointer;
+      font-family: var(--font-display);
+      font-size: clamp(0.8rem, 1.8vw, 0.95rem);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      transition: color var(--transition), border-color var(--transition), background var(--transition);
+      white-space: nowrap;
+      position: relative;
+    }
+
+    .tab-btn:hover { color: var(--text-hi); background: var(--bg-card); }
+
+    .tab-btn.active {
+      color: var(--amber);
+      border-bottom-color: var(--amber);
+      background: var(--bg-panel);
+    }
+
+    .tab-btn .tab-num {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--border);
+      font-size: 0.7rem;
+      line-height: 20px;
+      text-align: center;
+      margin-right: 6px;
+      transition: background var(--transition);
+    }
+    .tab-btn.active .tab-num { background: var(--amber); color: var(--text-inv); }
+
+    /* ═══════════════════════════════════════════════════════
+       MAIN LAYOUT
+    ═══════════════════════════════════════════════════════ */
+    main {
+      flex: 1;
+      overflow-y: auto;
+      padding: clamp(16px, 3vw, 32px);
+      padding-left: calc(clamp(16px, 3vw, 32px) + var(--safe-l));
+      padding-right: calc(clamp(16px, 3vw, 32px) + var(--safe-r));
+      padding-bottom: calc(clamp(16px, 3vw, 32px) + var(--safe-b));
+    }
+
+    .tab-content { display: none; animation: fadeUp 0.25s ease both; }
+    .tab-content.active { display: block; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       SHARED COMPONENTS
+    ═══════════════════════════════════════════════════════ */
+    .section-header {
+      margin-bottom: clamp(16px, 3vw, 28px);
+    }
+
+    .section-header h2 {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: clamp(1.2rem, 3vw, 1.6rem);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-hi);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-header h2::before {
+      content: '';
+      display: inline-block;
+      width: 4px;
+      height: 1.2em;
+      background: var(--amber);
+      border-radius: 2px;
+    }
+
+    .section-header p {
+      margin-top: 6px;
+      color: var(--text-mid);
+      font-size: 0.88rem;
+      max-width: 60ch;
+      padding-left: 14px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-hi);
+      color: var(--text-hi);
+      padding: 10px 20px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      transition: all var(--transition);
+      white-space: nowrap;
+      min-height: 44px; /* accessible touch target */
+    }
+    .btn:hover { background: var(--bg-panel); border-color: var(--amber); color: var(--amber); }
+    .btn:active { transform: scale(0.97); }
+
+    .btn-primary {
+      background: var(--amber);
+      border-color: var(--amber);
+      color: var(--text-inv);
+    }
+    .btn-primary:hover { background: #f0b840; border-color: #f0b840; color: var(--text-inv); }
+
+    /* ═══════════════════════════════════════════════════════
+       1. LEARN TAB — ALPHABET GRID
+    ═══════════════════════════════════════════════════════ */
+    #learn {
+      max-width: 1200px;
+    }
+
+    .char-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(min(90px, 100%), 1fr));
+      gap: 8px;
+    }
+
+    .char-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      text-align: center;
+      padding: clamp(12px, 2vw, 20px) 8px;
+      cursor: pointer;
+      transition: all var(--transition);
+      position: relative;
+      overflow: hidden;
+      min-height: 80px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      user-select: none;
+    }
+
+    .char-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--amber-glow);
+      opacity: 0;
+      transition: opacity var(--transition);
+    }
+
+    .char-card:hover {
+      border-color: var(--amber-dim);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(245,166,35,0.15);
+    }
+    .char-card:hover::after { opacity: 1; }
+
+    .char-card.playing {
+      border-color: var(--amber);
+      background: var(--bg-panel);
+    }
+    .char-card.playing::after { opacity: 1; }
+
+    .char-card:active { transform: scale(0.96); }
+
+    .char-letter {
+      font-family: var(--font-display);
+      font-size: clamp(1.3rem, 3vw, 1.7rem);
+      font-weight: 700;
+      color: var(--text-hi);
+      line-height: 1;
+    }
+
+    .char-morse {
+      font-size: clamp(0.85rem, 2vw, 1.05rem);
+      color: var(--green);
+      letter-spacing: 3px;
+      line-height: 1;
+    }
+
+    /* play ripple */
+    .char-card .ripple {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle, var(--amber-glow) 0%, transparent 70%);
+      animation: ripple 0.6s ease-out forwards;
+    }
+
+    @keyframes ripple {
+      from { opacity: 1; transform: scale(0.5); }
+      to   { opacity: 0; transform: scale(1.5); }
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       TELEGRAM / KEY DISPLAY
+    ═══════════════════════════════════════════════════════ */
+    .key-layout {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: clamp(16px, 3vw, 28px);
+      width: 100%;
+      max-width: 640px;
+      margin: 0 auto;
+      padding: clamp(16px, 3vw, 32px) 0;
+    }
+
+    .display-screen {
+      width: 100%;
+      background: var(--bg-inset);
+      border: 1px solid var(--border-hi);
+      border-radius: var(--radius-md);
+      padding: clamp(14px, 2.5vw, 22px);
+      min-height: 120px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: inset 0 2px 12px rgba(0,0,0,0.5), var(--shadow-sm);
+    }
+
+    /* scanline effect */
+    .display-screen::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        to bottom,
+        transparent 0px,
+        transparent 3px,
+        rgba(0,0,0,0.08) 3px,
+        rgba(0,0,0,0.08) 4px
+      );
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .display-screen .screen-label {
+      font-size: 0.68rem;
+      color: var(--text-lo);
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      margin-bottom: 8px;
+    }
+
+    .current-buffer {
+      font-size: clamp(1.4rem, 4vw, 2rem);
+      letter-spacing: 6px;
+      color: var(--amber);
+      min-height: 2.4rem;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* blinking cursor */
+    .current-buffer::after {
+      content: '█';
+      animation: blink 1s step-end infinite;
+      color: var(--amber);
+      opacity: 0.7;
+      font-size: 0.8em;
+      margin-left: 2px;
+    }
+
+    @keyframes blink { 0%, 100% { opacity: 0.7; } 50% { opacity: 0; } }
+
+    .decoded-text {
+      font-size: clamp(1rem, 2.5vw, 1.3rem);
+      color: var(--text-hi);
+      margin-top: 10px;
+      word-break: break-all;
+      position: relative;
+      z-index: 2;
+      min-height: 1.8rem;
+    }
+
+    .decoded-text.placeholder { color: var(--text-lo); font-style: italic; }
+
+    /* TX light */
+    .tx-indicator {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.78rem;
+      color: var(--text-lo);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .tx-light {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--border);
+      border: 2px solid var(--border-hi);
+      transition: all 0.06s;
+      flex-shrink: 0;
+    }
+    .tx-light.on {
+      background: var(--green);
+      border-color: var(--green);
+      box-shadow: 0 0 10px var(--green), 0 0 20px rgba(61,224,106,0.4);
+    }
+
+    /* The telegraph key button */
+    .key-btn {
+      width: 100%;
+      max-width: 320px;
+      min-height: clamp(90px, 16vw, 120px);
+      background: linear-gradient(160deg, var(--bg-card) 0%, var(--bg-raised) 100%);
+      border: 2px solid var(--border-hi);
+      border-radius: var(--radius-md);
+      border-bottom: 8px solid var(--bg-inset);
+      color: var(--text-mid);
+      font-family: var(--font-display);
+      font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+      transition: transform 0.05s, border-bottom-width 0.05s, box-shadow 0.05s, color var(--transition);
+      box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255,255,255,0.05);
+      position: relative;
+      overflow: hidden;
+      touch-action: none; /* prevent scroll-on-hold on mobile */
+    }
+
+    .key-btn::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 40%;
+      background: linear-gradient(to bottom, rgba(255,255,255,0.03), transparent);
+      pointer-events: none;
+    }
+
+    .key-btn:hover { color: var(--text-hi); border-color: var(--amber-dim); }
+
+    .key-btn.pressed, .key-btn:active {
+      transform: translateY(6px);
+      border-bottom-width: 2px;
+      box-shadow: var(--shadow-sm);
+      color: var(--amber);
+      border-color: var(--amber);
+      background: linear-gradient(160deg, var(--bg-panel) 0%, var(--bg-raised) 100%);
+    }
+
+    .key-hint {
+      font-size: 0.72rem;
+      color: var(--text-lo);
+      text-align: center;
+      margin-top: -8px;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       2. TRAINER TAB
+    ═══════════════════════════════════════════════════════ */
+    #trainer {
+      height: calc(100dvh - 140px);
+      min-height: 400px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       3. LISTEN TAB
+    ═══════════════════════════════════════════════════════ */
+    .listen-card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: clamp(24px, 5vw, 48px);
+      text-align: center;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    .listen-play-btn {
+      width: clamp(80px, 20vw, 120px);
+      height: clamp(80px, 20vw, 120px);
+      border-radius: 50%;
+      background: var(--amber);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 28px;
+      transition: all var(--transition);
+      box-shadow: 0 0 0 0 var(--amber-glow);
+    }
+
+    .listen-play-btn:hover {
+      background: #f0b840;
+      transform: scale(1.05);
+      box-shadow: 0 0 0 12px var(--amber-glow);
+    }
+
+    .listen-play-btn:active { transform: scale(0.95); }
+
+    .listen-play-btn.pulsing {
+      animation: sonar 1s ease-out infinite;
+    }
+
+    @keyframes sonar {
+      0%   { box-shadow: 0 0 0 0 var(--amber-glow); }
+      70%  { box-shadow: 0 0 0 20px transparent; }
+      100% { box-shadow: 0 0 0 0 transparent; }
+    }
+
+    .play-icon {
+      width: 0;
+      height: 0;
+      border-style: solid;
+      border-width: clamp(12px,3vw,18px) 0 clamp(12px,3vw,18px) clamp(22px,5vw,32px);
+      border-color: transparent transparent transparent var(--text-inv);
+      margin-left: 4px;
+    }
+
+    .listen-input-wrap {
+      margin: 20px 0;
+    }
+
+    .listen-input {
+      width: clamp(60px, 15vw, 80px);
+      height: clamp(60px, 15vw, 80px);
+      font-size: clamp(1.5rem, 5vw, 2.2rem);
+      text-align: center;
+      background: var(--bg-inset);
+      border: 2px solid var(--border-hi);
+      border-radius: var(--radius-sm);
+      color: var(--amber);
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      caret-color: var(--amber);
+      transition: border-color var(--transition);
+    }
+    .listen-input:focus { border-color: var(--amber); }
+    .listen-input.correct { border-color: var(--green); color: var(--green); }
+    .listen-input.wrong   { border-color: var(--red); color: var(--red); }
+
+    .listen-feedback {
+      min-height: 1.6rem;
+      font-size: 0.9rem;
+      font-family: var(--font-display);
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      transition: color var(--transition);
+    }
+    .listen-feedback.correct { color: var(--green); }
+    .listen-feedback.wrong   { color: var(--red); }
+
+    .listen-prompt {
+      font-size: 0.85rem;
+      color: var(--text-lo);
+      margin-bottom: 16px;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       4. CHALLENGE TAB
+    ═══════════════════════════════════════════════════════ */
+    .challenge-layout {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: clamp(16px, 3vw, 28px);
+      max-width: 640px;
+      margin: 0 auto;
+    }
+
+    .challenge-target-wrap {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: clamp(20px, 4vw, 40px);
+      text-align: center;
+      width: 100%;
+    }
+
+    .challenge-target-label {
+      font-size: 0.72rem;
+      color: var(--text-lo);
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      margin-bottom: 8px;
+    }
+
+    .challenge-target-char {
+      font-family: var(--font-display);
+      font-size: clamp(4rem, 12vw, 7rem);
+      font-weight: 700;
+      color: var(--text-hi);
+      line-height: 1;
+      transition: transform 0.2s, color 0.2s;
+    }
+
+    .challenge-target-char.shake {
+      animation: shake 0.4s ease both;
+    }
+
+    .challenge-target-char.success {
+      color: var(--green);
+      animation: pop 0.35s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%       { transform: translateX(-8px); }
+      40%       { transform: translateX(8px); }
+      60%       { transform: translateX(-5px); }
+      80%       { transform: translateX(5px); }
+    }
+
+    @keyframes pop {
+      0%   { transform: scale(1); }
+      50%  { transform: scale(1.25); }
+      100% { transform: scale(1); }
+    }
+
+    .challenge-feedback {
+      min-height: 1.8rem;
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: clamp(0.9rem, 2vw, 1.1rem);
+      letter-spacing: 0.06em;
+      text-align: center;
+      transition: color var(--transition);
+    }
+    .challenge-feedback.correct { color: var(--green); }
+    .challenge-feedback.wrong   { color: var(--red); }
+
+    /* ═══════════════════════════════════════════════════════
+       5. COMM ROOM TAB
+    ═══════════════════════════════════════════════════════ */
+    .comm-layout {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .chat-window {
+      height: clamp(240px, 36vh, 360px);
+      background: var(--bg-inset);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .msg {
+      max-width: 85%;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      font-size: clamp(0.8rem, 1.8vw, 0.9rem);
+      line-height: 1.5;
+      animation: msgIn 0.2s ease both;
+    }
+
+    @keyframes msgIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .msg-sender {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      opacity: 0.7;
+    }
+
+    .msg.hq {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      align-self: flex-start;
+    }
+    .msg.hq .msg-sender { color: var(--amber); }
+
+    .msg.user {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-hi);
+      align-self: flex-end;
+      text-align: right;
+    }
+    .msg.user .msg-sender { color: var(--green); }
+
+    .typing-indicator {
+      display: none;
+      align-self: flex-start;
+      gap: 5px;
+      padding: 10px 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+    }
+    .typing-indicator.active { display: flex; }
+    .typing-indicator span {
+      width: 6px;
+      height: 6px;
+      background: var(--amber);
+      border-radius: 50%;
+      animation: typingBounce 1.2s ease-in-out infinite;
+    }
+    .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes typingBounce {
+      0%, 80%, 100% { transform: translateY(0); }
+      40%            { transform: translateY(-6px); }
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       6. STATS TAB
+    ═══════════════════════════════════════════════════════ */
+    .stats-layout {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .stat-card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: clamp(16px, 3vw, 28px);
+      text-align: center;
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--text-mid);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 10px;
+    }
+
+    .stat-value {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 700;
+      color: var(--amber);
+      line-height: 1;
+    }
+
+    .stat-sub {
+      font-size: 0.75rem;
+      color: var(--text-lo);
+      margin-top: 6px;
+    }
+
+    .progress-bar-wrap {
+      background: var(--bg-inset);
+      border-radius: 4px;
+      height: 6px;
+      overflow: hidden;
+      margin-top: 12px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--green-dim), var(--green));
+      border-radius: 4px;
+      transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    .achievements {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 20px;
+    }
+
+    .achievements h3 {
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--amber);
+      margin-bottom: 14px;
+    }
+
+    .badge-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-family: var(--font-display);
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      border: 1px solid var(--border);
+      color: var(--text-lo);
+      background: var(--bg-card);
+      transition: all var(--transition);
+    }
+
+    .badge.earned {
+      border-color: var(--amber-dim);
+      color: var(--amber);
+      background: var(--bg-panel);
+    }
+
+    .badge-icon { font-size: 1rem; }
+
+    /* ═══════════════════════════════════════════════════════
+       TOAST NOTIFICATIONS
+    ═══════════════════════════════════════════════════════ */
+    #toast-container {
+      position: fixed;
+      bottom: calc(20px + var(--safe-b));
+      right: calc(20px + var(--safe-r));
+      z-index: 9000;
+      display: flex;
+      flex-direction: column-reverse;
+      gap: 10px;
+      pointer-events: none;
+    }
+
+    .toast {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-hi);
+      border-radius: var(--radius-sm);
+      padding: 12px 18px;
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 0.88rem;
+      color: var(--text-hi);
+      box-shadow: var(--shadow-md);
+      animation: toastIn 0.3s ease both;
+      max-width: min(320px, calc(100vw - 40px));
+    }
+
+    .toast.green { border-left: 4px solid var(--green); color: var(--green); }
+    .toast.red   { border-left: 4px solid var(--red); color: var(--red); }
+    .toast.amber { border-left: 4px solid var(--amber); color: var(--amber); }
+
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateX(20px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes toastOut {
+      from { opacity: 1; }
+      to   { opacity: 0; transform: translateX(20px); }
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       RESPONSIVE OVERRIDES
+    ═══════════════════════════════════════════════════════ */
+    @media (max-width: 480px) {
+      .header-controls { gap: 6px; }
+      .ctrl-group { padding: 3px 7px; }
+      .ctrl-group input { width: 44px; }
+      .char-grid { grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); }
+    }
+
+    @media (min-width: 1400px) {
+      main { max-width: 1400px; margin: 0 auto; }
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       UTILITY
+    ═══════════════════════════════════════════════════════ */
+    .visually-hidden {
+      position: absolute;
+      width: 1px; height: 1px;
+      padding: 0; margin: -1px;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 20px 0;
+    }
+
+    .text-green  { color: var(--green); }
+    .text-amber  { color: var(--amber); }
+    .text-red    { color: var(--red); }
+    .text-muted  { color: var(--text-mid); }
+  </style>
+</head>
+
+<body>
+  <!-- ═══════════════════════════════════════════════════
+       HEADER
+  ═══════════════════════════════════════════════════ -->
+  <header role="banner">
+    <div class="logo" aria-label="Morse School">
+      <div class="logo-dot" aria-hidden="true">
+        <span></span><span></span>
+      </div>
+      <span class="logo-text">Morse <em>School</em></span>
+    </div>
+
+    <div class="header-controls" role="group" aria-label="Audio settings">
+      <div class="ctrl-group">
+        <label for="input-wpm">WPM</label>
+        <input type="number" id="input-wpm" value="20" min="5" max="50"
+               aria-label="Words per minute" title="Transmission speed in words per minute">
+      </div>
+      <div class="ctrl-group">
+        <label for="input-freq">Hz</label>
+        <input type="number" id="input-freq" value="600" min="300" max="1000"
+               aria-label="Tone frequency in hertz" title="Tone frequency in hertz">
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════════════════════════════
+       NAV
+  ═══════════════════════════════════════════════════ -->
+  <nav role="tablist" aria-label="Training modules">
+    <button class="tab-btn active" role="tab" aria-selected="true"
+            aria-controls="learn" data-target="learn">
+      <span class="tab-num" aria-hidden="true">1</span>Learn
+    </button>
+    <button class="tab-btn" role="tab" aria-selected="false"
+            aria-controls="trainer" data-target="trainer">
+      <span class="tab-num" aria-hidden="true">2</span>Trainer
+    </button>
+    <button class="tab-btn" role="tab" aria-selected="false"
+            aria-controls="listen" data-target="listen">
+      <span class="tab-num" aria-hidden="true">3</span>Listen
+    </button>
+    <button class="tab-btn" role="tab" aria-selected="false"
+            aria-controls="challenge" data-target="challenge">
+      <span class="tab-num" aria-hidden="true">4</span>Challenge
+    </button>
+    <button class="tab-btn" role="tab" aria-selected="false"
+            aria-controls="comm" data-target="comm">
+      <span class="tab-num" aria-hidden="true">5</span>Comm Room
+    </button>
+    <button class="tab-btn" role="tab" aria-selected="false"
+            aria-controls="stats" data-target="stats">
+      <span class="tab-num" aria-hidden="true">★</span>Stats
+    </button>
+  </nav>
+
+  <!-- ═══════════════════════════════════════════════════
+       MAIN CONTENT
+  ═══════════════════════════════════════════════════ -->
+  <main>
+
+    <!-- 1. LEARN -->
+    <section id="learn" class="tab-content active" role="tabpanel" aria-labelledby="tab-learn">
+      <div class="section-header">
+        <h2>Morse Alphabet &amp; Numbers</h2>
+        <p>Tap any character to hear its pattern. Dots are short; dashes are long.</p>
+      </div>
+      <div id="alphabet-grid" class="char-grid" role="list" aria-label="Morse code reference"></div>
+    </section>
+
+    <!-- 2. TRAINER -->
+    <section id="trainer" class="tab-content" role="tabpanel" aria-labelledby="tab-trainer">
+      <div class="key-layout">
+        <div class="display-screen" aria-live="polite" aria-label="Decoded Morse output">
+          <div class="screen-label">Current symbol</div>
+          <div id="trainer-buffer" class="current-buffer" aria-hidden="true"></div>
+          <div id="trainer-output" class="decoded-text placeholder">Awaiting transmission…</div>
+        </div>
+
+        <div class="tx-indicator" aria-live="polite">
+          <div class="tx-light" id="tx-light" aria-hidden="true"></div>
+          <span id="tx-status">Standby</span>
+        </div>
+
+        <button class="key-btn" id="telegraph-key"
+                aria-label="Telegraph key — tap or hold (spacebar)"
+                aria-pressed="false">
+          TAP / HOLD<br><small style="font-size:0.7em; font-weight:400; opacity:0.6;">SPACEBAR</small>
+        </button>
+        <p class="key-hint" aria-hidden="true">Short press = dot · Long press = dash · Pause = decode</p>
+
+        <button class="btn" id="btn-clear-trainer">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
+               viewBox="0 0 24 24" aria-hidden="true">
+            <polyline points="1 4 1 10 7 10"></polyline>
+            <path d="M3.51 15a9 9 0 1 0 .49-3.96"></path>
+          </svg>
+          Clear Log
+        </button>
+      </div>
+    </section>
+
+    <!-- 3. LISTEN -->
+    <section id="listen" class="tab-content" role="tabpanel" aria-labelledby="tab-listen">
+      <div class="section-header">
+        <h2>Listening Practice</h2>
+        <p>Play a signal, then type the character you heard. Train your ear.</p>
+      </div>
+      <div class="listen-card">
+        <button class="listen-play-btn" id="btn-play-random" aria-label="Play random Morse signal">
+          <span class="play-icon" aria-hidden="true"></span>
+        </button>
+        <p class="listen-prompt">Hit play — then type the character</p>
+        <div class="listen-input-wrap">
+          <input type="text" class="listen-input" id="listen-input"
+                 maxlength="1" autocomplete="off" autocorrect="off" spellcheck="false"
+                 aria-label="Type the character you heard" placeholder="?">
+        </div>
+        <div id="listen-feedback" class="listen-feedback" role="status" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <!-- 4. CHALLENGE -->
+    <section id="challenge" class="tab-content" role="tabpanel" aria-labelledby="tab-challenge">
+      <div class="section-header">
+        <h2>Challenge Mode</h2>
+        <p>Tap the correct Morse code for the displayed character. Build your streak.</p>
+      </div>
+      <div class="challenge-layout">
+        <div class="challenge-target-wrap">
+          <div class="challenge-target-label">Transmit this character</div>
+          <div id="challenge-target" class="challenge-target-char" aria-live="polite" aria-atomic="true">A</div>
+        </div>
+
+        <div class="display-screen" style="width:100%;" aria-live="polite">
+          <div class="screen-label">Your input</div>
+          <div id="challenge-buffer" class="current-buffer" aria-hidden="true"></div>
+        </div>
+
+        <div id="challenge-feedback" class="challenge-feedback" role="status" aria-live="polite"></div>
+
+        <button class="key-btn" id="challenge-key"
+                aria-label="Challenge telegraph key"
+                aria-pressed="false">
+          TAP HERE
+        </button>
+        <p class="key-hint" aria-hidden="true">Short = dot · Long = dash</p>
+      </div>
+    </section>
+
+    <!-- 5. COMM ROOM -->
+    <section id="comm" class="tab-content" role="tabpanel" aria-labelledby="tab-comm">
+      <div class="section-header">
+        <h2>Communication Room</h2>
+        <p>Tap a message. Pause to transmit. HQ will respond.</p>
+      </div>
+      <div class="comm-layout">
+        <div class="chat-window" id="chat-log" role="log" aria-live="polite" aria-label="Chat log">
+          <div class="msg hq">
+            <div class="msg-sender">HQ Operator</div>
+            --. --- .- .... . .- -.. &nbsp;·&nbsp; GO AHEAD
+          </div>
+          <div class="typing-indicator" id="typing-indicator" aria-label="HQ is responding…">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+
+        <div aria-live="polite">
+          <div id="comm-buffer" class="current-buffer"
+               style="min-height:1.8rem; margin-bottom:10px; color:var(--amber);"
+               aria-hidden="true"></div>
+        </div>
+
+        <button class="key-btn" id="comm-key" style="max-width:100%; width:100%;"
+                aria-label="Comm room telegraph key"
+                aria-pressed="false">
+          TX KEY
+        </button>
+        <p class="key-hint" aria-hidden="true">Tap · Pause 3s to send word · Pause 7s to transmit</p>
+      </div>
+    </section>
+
+    <!-- STATS -->
+    <section id="stats" class="tab-content" role="tabpanel" aria-labelledby="tab-stats">
+      <div class="section-header">
+        <h2>Operator Record</h2>
+        <p>Your training progress is saved between sessions.</p>
+      </div>
+      <div class="stats-layout">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Listening Accuracy</div>
+            <div class="stat-value" id="stat-listen-pct">0%</div>
+            <div class="stat-sub" id="stat-listen-sub">0 / 0 correct</div>
+            <div class="progress-bar-wrap">
+              <div class="progress-bar" id="stat-listen-bar" style="width:0%"></div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Best Streak</div>
+            <div class="stat-value" id="stat-streak">0</div>
+            <div class="stat-sub" id="stat-streak-sub">Current: 0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Characters Sent</div>
+            <div class="stat-value" id="stat-chars">0</div>
+            <div class="stat-sub">total transmissions</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Sessions</div>
+            <div class="stat-value" id="stat-sessions">1</div>
+            <div class="stat-sub">visits logged</div>
+          </div>
+        </div>
+
+        <div class="achievements">
+          <h3>Achievements</h3>
+          <div class="badge-grid" id="badge-grid"></div>
+        </div>
+
+        <hr class="divider">
+        <button class="btn" id="btn-reset-stats" style="margin-top:4px;">
+          Reset All Stats
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Toast container -->
+  <div id="toast-container" aria-live="assertive" aria-atomic="true"></div>
+
+  <!-- ═══════════════════════════════════════════════════
+       JAVASCRIPT
+  ═══════════════════════════════════════════════════ -->
+  <script>
+  (() => {
+    'use strict';
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       MORSE DICTIONARY
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    const MORSE_MAP = Object.freeze({
+      'A':'.-',   'B':'-...', 'C':'-.-.', 'D':'-..',  'E':'.',    'F':'..-.',
+      'G':'--.',  'H':'....', 'I':'..',   'J':'.---', 'K':'-.-',  'L':'.-..',
+      'M':'--',   'N':'-.',   'O':'---',  'P':'.--.', 'Q':'--.-', 'R':'.-.',
+      'S':'...',  'T':'-',    'U':'..-',  'V':'...-', 'W':'.--',  'X':'-..-',
+      'Y':'-.--', 'Z':'--..',
+      '0':'-----','1':'.----','2':'..---','3':'...--', '4':'....-','5':'.....',
+      '6':'-....','7':'--...','8':'---..',  '9':'----.',
+      '.':'.-.-.-', ',':'--..--', '?':'..--..'
+    });
+
+    const REVERSE_MORSE = Object.freeze(
+      Object.fromEntries(Object.entries(MORSE_MAP).map(([k,v]) => [v,k]))
+    );
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       AUDIO ENGINE — single AudioContext, no leaks
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    const Audio = (() => {
+      let ctx = null;
+      let activeOsc = null;
+      let activeGain = null;
+
+      function getCtx() {
+        if (!ctx) {
+          ctx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        return ctx;
+      }
+
+      function resume() {
+        const c = getCtx();
+        if (c.state === 'suspended') c.resume();
+        return c;
+      }
+
+      function getFreq() {
+        const v = parseInt(document.getElementById('input-freq').value, 10);
+        return (isNaN(v) || v < 100 || v > 2000) ? 600 : v;
+      }
+
+      function startTone() {
+        stopTone();
+        try {
+          const c = resume();
+          activeOsc = c.createOscillator();
+          activeGain = c.createGain();
+          activeOsc.type = 'sine';
+          activeOsc.frequency.value = getFreq();
+          activeOsc.connect(activeGain);
+          activeGain.connect(c.destination);
+          const t = c.currentTime;
+          activeGain.gain.setValueAtTime(0, t);
+          activeGain.gain.linearRampToValueAtTime(0.9, t + 0.006);
+          activeOsc.start(t);
+        } catch (e) {
+          console.warn('Audio startTone error:', e);
+        }
+      }
+
+      function stopTone() {
+        if (!activeGain || !activeOsc) return;
+        try {
+          const c = getCtx();
+          const t = c.currentTime;
+          activeGain.gain.cancelScheduledValues(t);
+          activeGain.gain.setValueAtTime(activeGain.gain.value, t);
+          activeGain.gain.linearRampToValueAtTime(0, t + 0.007);
+          const oscRef = activeOsc;
+          setTimeout(() => { try { oscRef.stop(); } catch(_) {} }, 15);
+        } catch (e) {
+          console.warn('Audio stopTone error:', e);
+        }
+        activeOsc = null;
+        activeGain = null;
+      }
+
+      const sleep = ms => new Promise(r => setTimeout(r, ms));
+      let isPlaying = false;
+
+      async function playSequence(sequence) {
+        if (isPlaying) return;
+        isPlaying = true;
+        try {
+          resume();
+          const wpm = getWpm();
+          const dot = 1200 / wpm;
+          for (let i = 0; i < sequence.length; i++) {
+            const ch = sequence[i];
+            if (ch === '.') {
+              startTone();
+              await sleep(dot);
+              stopTone();
+            } else if (ch === '-') {
+              startTone();
+              await sleep(dot * 3);
+              stopTone();
+            } else if (ch === ' ') {
+              await sleep(dot * 3);
+            }
+            if (i < sequence.length - 1) await sleep(dot);
+          }
+        } catch (e) {
+          console.warn('Audio playSequence error:', e);
+        } finally {
+          stopTone();
+          isPlaying = false;
+        }
+      }
+
+      return { startTone, stopTone, playSequence, resume };
+    })();
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       HELPERS
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    function getWpm() {
+      const v = parseInt(document.getElementById('input-wpm').value, 10);
+      return (isNaN(v) || v < 5 || v > 50) ? 20 : v;
+    }
+
+    function sanitizeText(str) {
+      const d = document.createElement('div');
+      d.appendChild(document.createTextNode(str));
+      return d.innerHTML;
+    }
+
+    function textToMorse(text) {
+      return text.toUpperCase().split('').map(c => MORSE_MAP[c] || '').filter(Boolean).join(' ');
+    }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       TOAST
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    function showToast(message, type = 'amber', duration = 2800) {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.textContent = message;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.animation = 'toastOut 0.3s ease forwards';
+        setTimeout(() => toast.remove(), 320);
+      }, duration);
+    }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       TAB NAVIGATION
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    const tabs = document.querySelectorAll('.tab-btn');
+    const panels = document.querySelectorAll('.tab-content');
+
+    function switchTab(targetId) {
+      tabs.forEach(btn => {
+        const active = btn.dataset.target === targetId;
+        btn.classList.toggle('active', active);
+        btn.setAttribute('aria-selected', String(active));
+      });
+      panels.forEach(panel => {
+        panel.classList.toggle('active', panel.id === targetId);
+      });
+    }
+
+    tabs.forEach(btn => {
+      btn.addEventListener('click', () => switchTab(btn.dataset.target));
+    });
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       STATS & PERSISTENCE
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    const STORAGE_KEY = 'morse_school_stats';
+
+    const DEFAULT_STATS = {
+      listenCorrect: 0, listenTotal: 0,
+      streak: 0, bestStreak: 0,
+      chars: 0, sessions: 1
+    };
+
+    let stats = { ...DEFAULT_STATS };
+
+    function loadStats() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          stats = { ...DEFAULT_STATS, ...parsed };
+          stats.sessions = (stats.sessions || 1) + 1;
+        }
+      } catch (_) { /* graceful */ }
+      saveStats();
+      renderStats();
+    }
+
+    function saveStats() {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(stats)); } catch (_) {}
+    }
+
+    function renderStats() {
+      const pct = stats.listenTotal === 0 ? 0
+        : Math.round((stats.listenCorrect / stats.listenTotal) * 100);
+      document.getElementById('stat-listen-pct').textContent = pct + '%';
+      document.getElementById('stat-listen-sub').textContent =
+        `${stats.listenCorrect} / ${stats.listenTotal} correct`;
+      document.getElementById('stat-listen-bar').style.width = pct + '%';
+      document.getElementById('stat-streak').textContent = stats.bestStreak;
+      document.getElementById('stat-streak-sub').textContent = `Current: ${stats.streak}`;
+      document.getElementById('stat-chars').textContent = stats.chars;
+      document.getElementById('stat-sessions').textContent = stats.sessions;
+      renderBadges();
+    }
+
+    function updateStat(key, value) {
+      if (key === 'streak') {
+        if (value === 0) {
+          stats.streak = 0;
+        } else {
+          stats.streak += value;
+          if (stats.streak > stats.bestStreak) stats.bestStreak = stats.streak;
+        }
+      } else {
+        stats[key] = (stats[key] || 0) + value;
+      }
+      saveStats();
+      renderStats();
+    }
+
+    /* Achievements */
+    const ACHIEVEMENTS = [
+      { id: 'first_char',   label: 'First Signal',    icon: '📡', condition: s => s.chars >= 1 },
+      { id: 'ten_chars',    label: 'Rookie Operator', icon: '🔑', condition: s => s.chars >= 10 },
+      { id: 'fifty_chars',  label: 'Experienced',     icon: '⚡', condition: s => s.chars >= 50 },
+      { id: 'streak5',      label: 'Streak of 5',     icon: '🔥', condition: s => s.bestStreak >= 5 },
+      { id: 'streak10',     label: 'Streak of 10',    icon: '💎', condition: s => s.bestStreak >= 10 },
+      { id: 'perfect10',    label: '10 Correct Ears', icon: '👂', condition: s => s.listenCorrect >= 10 },
+      { id: 'accuracy80',   label: '80% Accuracy',    icon: '🎯', condition: s =>
+          s.listenTotal >= 5 && (s.listenCorrect / s.listenTotal) >= 0.8 },
+      { id: 'multisession', label: 'Returning Op.',   icon: '🏅', condition: s => s.sessions >= 3 },
+    ];
+
+    function renderBadges() {
+      const grid = document.getElementById('badge-grid');
+      grid.innerHTML = '';
+      ACHIEVEMENTS.forEach(a => {
+        const earned = a.condition(stats);
+        const div = document.createElement('div');
+        div.className = 'badge' + (earned ? ' earned' : '');
+        div.setAttribute('aria-label', `${a.label} — ${earned ? 'earned' : 'locked'}`);
+        const icon = document.createElement('span');
+        icon.className = 'badge-icon';
+        icon.textContent = earned ? a.icon : '🔒';
+        const label = document.createElement('span');
+        label.textContent = a.label;
+        div.appendChild(icon);
+        div.appendChild(label);
+        grid.appendChild(div);
+      });
+    }
+
+    document.getElementById('btn-reset-stats').addEventListener('click', () => {
+      if (!confirm('Reset all stats? This cannot be undone.')) return;
+      stats = { ...DEFAULT_STATS };
+      saveStats();
+      renderStats();
+      showToast('Stats reset.', 'amber');
+    });
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       1. LEARN GRID
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    const grid = document.getElementById('alphabet-grid');
+
+    Object.entries(MORSE_MAP).forEach(([char, code]) => {
+      const card = document.createElement('div');
+      card.className = 'char-card';
+      card.setAttribute('role', 'listitem');
+      card.setAttribute('tabindex', '0');
+      card.setAttribute('aria-label', `${char}: ${code}`);
+      card.title = `${char} = ${code}`;
+
+      const letterEl = document.createElement('div');
+      letterEl.className = 'char-letter';
+      letterEl.textContent = char;
+
+      const morseEl = document.createElement('div');
+      morseEl.className = 'char-morse';
+      morseEl.textContent = code;
+
+      card.appendChild(letterEl);
+      card.appendChild(morseEl);
+
+      const play = async () => {
+        if (card.classList.contains('playing')) return;
+        card.classList.add('playing');
+        // ripple
+        const ripple = document.createElement('span');
+        ripple.className = 'ripple';
+        card.appendChild(ripple);
+        setTimeout(() => ripple.remove(), 700);
+        try {
+          await Audio.playSequence(code);
+        } finally {
+          card.classList.remove('playing');
+        }
+      };
+
+      card.addEventListener('click', play);
+      card.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); play(); }
+      });
+
+      grid.appendChild(card);
+    });
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       TAP DETECTOR
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    class TapDetector {
+      constructor({ onCharDecoded, onWordGap } = {}) {
+        this._pressing   = false;
+        this._pressStart = 0;
+        this._buffer     = '';
+        this._letterTimer = null;
+        this._wordTimer   = null;
+        this.onCharDecoded = onCharDecoded;
+        this.onWordGap     = onWordGap;
+      }
+
+      get buffer() { return this._buffer; }
+
+      down() {
+        if (this._pressing) return;
+        this._pressing   = true;
+        this._pressStart = performance.now();
+        clearTimeout(this._letterTimer);
+        clearTimeout(this._wordTimer);
+        Audio.startTone();
+        txLight(true);
+      }
+
+      up() {
+        if (!this._pressing) return;
+        this._pressing = false;
+        Audio.stopTone();
+        txLight(false);
+
+        const duration = performance.now() - this._pressStart;
+        const wpm = getWpm();
+        const dot = 1200 / wpm;
+
+        // Threshold: <1.5 dot = dot; ≥1.5 dot = dash
+        // Also guard against phantom releases (< 20ms)
+        if (duration < 20) return;
+
+        const element = duration < dot * 1.5 ? '.' : '-';
+        this._buffer += element;
+        this._onBufferChange();
+
+        const letterGap = dot * 3;
+        const wordGap   = dot * 7;
+
+        this._letterTimer = setTimeout(() => {
+          const char = REVERSE_MORSE[this._buffer] || '?';
+          this._buffer = '';
+          this._onBufferChange();
+          if (this.onCharDecoded) this.onCharDecoded(char);
+        }, letterGap);
+
+        this._wordTimer = setTimeout(() => {
+          if (this.onWordGap) this.onWordGap();
+        }, wordGap);
+      }
+
+      reset() {
+        clearTimeout(this._letterTimer);
+        clearTimeout(this._wordTimer);
+        this._pressing = false;
+        this._buffer = '';
+        this._onBufferChange();
+        Audio.stopTone();
+        txLight(false);
+      }
+
+      _onBufferChange() {
+        /* override per instance */
+      }
+    }
+
+    function txLight(on) {
+      const el = document.getElementById('tx-light');
+      const statusEl = document.getElementById('tx-status');
+      if (!el) return;
+      el.classList.toggle('on', on);
+      if (statusEl) statusEl.textContent = on ? 'Transmitting' : 'Standby';
+    }
+
+    /* Key binding utility — prevents duplicate listeners */
+    function bindKey(buttonEl, detector) {
+      let bound = false;
+      if (buttonEl._detectorBound) return;
+      buttonEl._detectorBound = true;
+
+      const press = (e) => {
+        e.preventDefault();
+        if (bound) return;
+        bound = true;
+        detector.down();
+        buttonEl.classList.add('pressed');
+        buttonEl.setAttribute('aria-pressed', 'true');
+        Audio.resume();
+      };
+
+      const release = (e) => {
+        e.preventDefault();
+        if (!bound) return;
+        bound = false;
+        detector.up();
+        buttonEl.classList.remove('pressed');
+        buttonEl.setAttribute('aria-pressed', 'false');
+      };
+
+      buttonEl.addEventListener('mousedown', press);
+      buttonEl.addEventListener('mouseup', release);
+      buttonEl.addEventListener('mouseleave', release);
+      buttonEl.addEventListener('touchstart', press, { passive: false });
+      buttonEl.addEventListener('touchend', release, { passive: false });
+      buttonEl.addEventListener('touchcancel', release, { passive: false });
+    }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       2. TRAINER
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    const trainerBuffer = document.getElementById('trainer-buffer');
+    const trainerOutput = document.getElementById('trainer-output');
+
+    const trainerDetector = new TapDetector({
+      onCharDecoded: (char) => {
+        if (trainerOutput.classList.contains('placeholder')) {
+          trainerOutput.classList.remove('placeholder');
+          trainerOutput.textContent = '';
+        }
+        trainerOutput.textContent += char;
+        updateStat('chars', 1);
+        // Check achievements silently
+        checkAchievementToasts();
+      },
+      onWordGap: () => {
+        trainerOutput.textContent += ' ';
+      }
+    });
+
+    trainerDetector._onBufferChange = () => {
+      trainerBuffer.textContent = trainerDetector.buffer;
+    };
+
+    bindKey(document.getElementById('telegraph-key'), trainerDetector);
+
+    document.getElementById('btn-clear-trainer').addEventListener('click', () => {
+      trainerOutput.textContent = 'Awaiting transmission…';
+      trainerOutput.classList.add('placeholder');
+      trainerBuffer.textContent = '';
+      trainerDetector.reset();
+    });
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       3. LISTEN
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    let listenTarget = '';
+    const listenInput    = document.getElementById('listen-input');
+    const listenFeedback = document.getElementById('listen-feedback');
+    const btnPlay        = document.getElementById('btn-play-random');
+
+    btnPlay.addEventListener('click', () => {
+      Audio.resume();
+      const chars = Object.keys(MORSE_MAP);
+      listenTarget = chars[Math.floor(Math.random() * chars.length)];
+      btnPlay.classList.add('pulsing');
+      Audio.playSequence(MORSE_MAP[listenTarget]).then(() => {
+        btnPlay.classList.remove('pulsing');
+      });
+      listenInput.value = '';
+      listenInput.className = 'listen-input';
+      listenFeedback.textContent = '';
+      listenFeedback.className = 'listen-feedback';
+      listenInput.focus();
+    });
+
+    listenInput.addEventListener('input', () => {
+      const val = listenInput.value.toUpperCase().trim();
+      if (!val || !listenTarget) return;
+
+      if (val === listenTarget) {
+        listenInput.className = 'listen-input correct';
+        listenFeedback.className = 'listen-feedback correct';
+        listenFeedback.textContent = `✓ Correct! ${listenTarget} = ${MORSE_MAP[listenTarget]}`;
+        updateStat('listenCorrect', 1);
+        updateStat('listenTotal', 1);
+        checkAchievementToasts();
+        // Auto-advance after 1.2s
+        setTimeout(() => { if (listenInput.value) btnPlay.click(); }, 1300);
+      } else {
+        listenInput.className = 'listen-input wrong';
+        listenFeedback.className = 'listen-feedback wrong';
+        listenFeedback.textContent = `✗ Incorrect — try again`;
+        updateStat('listenTotal', 1);
+      }
+    });
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       4. CHALLENGE
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    const challengeTargetEl  = document.getElementById('challenge-target');
+    const challengeBufferEl  = document.getElementById('challenge-buffer');
+    const challengeFeedback  = document.getElementById('challenge-feedback');
+    const CHALLENGE_CHARS    = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    let currentChallenge     = 'A';
+    let challengeCooldown    = false;
+
+    function nextChallenge() {
+      currentChallenge = CHALLENGE_CHARS[Math.floor(Math.random() * CHALLENGE_CHARS.length)];
+      challengeTargetEl.textContent = currentChallenge;
+      challengeTargetEl.className = 'challenge-target-char';
+      challengeFeedback.textContent = '';
+      challengeFeedback.className = 'challenge-feedback';
+    }
+
+    const challengeDetector = new TapDetector({
+      onCharDecoded: (char) => {
+        if (challengeCooldown) return;
+        updateStat('chars', 1);
+
+        if (char === currentChallenge) {
+          challengeCooldown = true;
+          challengeFeedback.textContent = '✓ EXCELLENT!';
+          challengeFeedback.className = 'challenge-feedback correct';
+          challengeTargetEl.classList.add('success');
+          updateStat('streak', 1);
+          checkAchievementToasts();
+          setTimeout(() => {
+            challengeCooldown = false;
+            nextChallenge();
+          }, 900);
+        } else {
+          challengeCooldown = true;
+          const correctCode = MORSE_MAP[currentChallenge] || '?';
+          const yourCode = MORSE_MAP[char] || char;
+          challengeFeedback.textContent =
+            `✗ You sent "${char}" (${yourCode}) — target "${currentChallenge}" (${correctCode})`;
+          challengeFeedback.className = 'challenge-feedback wrong';
+          challengeTargetEl.classList.add('shake');
+          updateStat('streak', 0); // reset streak
+          setTimeout(() => {
+            challengeCooldown = false;
+            challengeBufferEl.textContent = '';
+          }, 1600);
+        }
+      }
+    });
+
+    challengeDetector._onBufferChange = () => {
+      challengeBufferEl.textContent = challengeDetector.buffer;
+    };
+
+    bindKey(document.getElementById('challenge-key'), challengeDetector);
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       5. COMM ROOM — with AI using Anthropic API
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    const chatLog          = document.getElementById('chat-log');
+    const commBufferEl     = document.getElementById('comm-buffer');
+    const typingIndicator  = document.getElementById('typing-indicator');
+    let commMsgBuffer      = '';
+    let awaitingReply      = false;
+
+    function appendMsg(sender, text) {
+      // Move typing indicator to bottom
+      typingIndicator.classList.remove('active');
+
+      const msg = document.createElement('div');
+      msg.className = `msg ${sender}`;
+
+      const senderLabel = document.createElement('div');
+      senderLabel.className = 'msg-sender';
+      senderLabel.textContent = sender === 'hq' ? 'HQ Operator' : 'You';
+
+      const body = document.createElement('div');
+      body.textContent = text; // safe — no innerHTML with user data
+
+      msg.appendChild(senderLabel);
+      msg.appendChild(body);
+      chatLog.insertBefore(msg, typingIndicator);
+      chatLog.scrollTop = chatLog.scrollHeight;
+    }
+
+    async function getAIReply(userMessage) {
+      const FALLBACKS = [
+        'ROGER THAT', 'LOUD AND CLEAR', 'QSL QSL', 'SEND NEXT', 'STANDING BY',
+        'GO AHEAD', 'MESSAGE RECEIVED', 'OVER AND OUT'
+      ];
+      const fallback = FALLBACKS[Math.floor(Math.random() * FALLBACKS.length)];
+
+      try {
+        const res = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'claude-sonnet-4-20250514',
+            max_tokens: 1000,
+            messages: [{
+              role: 'user',
+              content: `You are a Morse code radio operator at HQ. The user just sent: "${userMessage}". Reply with a SHORT (1-4 words) telegraphic radio response — authentic operator lingo (e.g. ROGER, QSL, LOUD AND CLEAR, SEND NEXT). Reply with ONLY the words, no punctuation, no quotes, uppercase.`
+            }]
+          })
+        });
+        if (!res.ok) throw new Error('API error');
+        const data = await res.json();
+        const reply = (data.content?.[0]?.text || fallback).trim().toUpperCase().slice(0, 30);
+        return reply;
+      } catch (_) {
+        return fallback;
+      }
+    }
+
+    async function sendCommMessage() {
+      const msg = commMsgBuffer.trim();
+      commMsgBuffer = '';
+      commBufferEl.textContent = '';
+      if (!msg || awaitingReply) return;
+
+      appendMsg('user', msg);
+      awaitingReply = true;
+      typingIndicator.classList.add('active');
+      chatLog.scrollTop = chatLog.scrollHeight;
+
+      const reply = await getAIReply(msg);
+      awaitingReply = false;
+
+      const morseReply = textToMorse(reply);
+      appendMsg('hq', `${morseReply}  ·  ${reply}`);
+
+      // Play first word back
+      const firstWord = morseReply.split('   ')[0];
+      Audio.playSequence(firstWord);
+    }
+
+    const commDetector = new TapDetector({
+      onCharDecoded: (char) => {
+        commMsgBuffer += char;
+        updateStat('chars', 1);
+      },
+      onWordGap: () => {
+        // word gap — auto send
+        sendCommMessage();
+      }
+    });
+
+    commDetector._onBufferChange = () => {
+      commBufferEl.textContent = commDetector.buffer;
+    };
+
+    bindKey(document.getElementById('comm-key'), commDetector);
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       ACHIEVEMENT TOAST TRIGGERS
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    const _toastedAchievements = new Set();
+
+    function checkAchievementToasts() {
+      ACHIEVEMENTS.forEach(a => {
+        if (!_toastedAchievements.has(a.id) && a.condition(stats)) {
+          _toastedAchievements.add(a.id);
+          showToast(`${a.icon} Achievement unlocked: ${a.label}`, 'amber', 3500);
+        }
+      });
+    }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       GLOBAL SPACEBAR → ACTIVE TAB KEY
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    const keyMap = {
+      trainer:   { detector: trainerDetector,   btn: () => document.getElementById('telegraph-key') },
+      challenge: { detector: challengeDetector,  btn: () => document.getElementById('challenge-key') },
+      comm:      { detector: commDetector,       btn: () => document.getElementById('comm-key') },
+    };
+
+    let spaceDown = false;
+
+    window.addEventListener('keydown', (e) => {
+      if (e.code !== 'Space') return;
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      if (spaceDown) return;
+      e.preventDefault();
+      spaceDown = true;
+
+      const activeId = document.querySelector('.tab-content.active')?.id;
+      const k = keyMap[activeId];
+      if (!k) return;
+      k.detector.down();
+      k.btn()?.classList.add('pressed');
+      k.btn()?.setAttribute('aria-pressed', 'true');
+      Audio.resume();
+    });
+
+    window.addEventListener('keyup', (e) => {
+      if (e.code !== 'Space') return;
+      if (!spaceDown) return;
+      e.preventDefault();
+      spaceDown = false;
+
+      const activeId = document.querySelector('.tab-content.active')?.id;
+      const k = keyMap[activeId];
+      if (!k) return;
+      k.detector.up();
+      k.btn()?.classList.remove('pressed');
+      k.btn()?.setAttribute('aria-pressed', 'false');
+    });
+
+    // Release space if window loses focus (prevents stuck state)
+    window.addEventListener('blur', () => {
+      if (!spaceDown) return;
+      spaceDown = false;
+      Object.values(keyMap).forEach(k => {
+        if (k.detector._pressing) k.detector.up();
+        k.btn()?.classList.remove('pressed');
+        k.btn()?.setAttribute('aria-pressed', 'false');
+      });
+    });
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       SETTINGS PERSISTENCE
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    function loadSettings() {
+      try {
+        const wpm  = localStorage.getItem('morse_wpm');
+        const freq = localStorage.getItem('morse_freq');
+        if (wpm)  document.getElementById('input-wpm').value  = wpm;
+        if (freq) document.getElementById('input-freq').value = freq;
+      } catch (_) {}
+    }
+
+    document.getElementById('input-wpm').addEventListener('change', () => {
+      try { localStorage.setItem('morse_wpm', document.getElementById('input-wpm').value); } catch (_) {}
+    });
+    document.getElementById('input-freq').addEventListener('change', () => {
+      try { localStorage.setItem('morse_freq', document.getElementById('input-freq').value); } catch (_) {}
+    });
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       INIT
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    loadSettings();
+    loadStats();
+
+    // Mark already-earned achievements as seen (don't re-toast on load)
+    ACHIEVEMENTS.forEach(a => {
+      if (a.condition(stats)) _toastedAchievements.add(a.id);
+    });
+
+  })();
+  </script>
+</body>
+</html>
