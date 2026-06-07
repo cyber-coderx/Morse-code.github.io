@@ -1634,7 +1634,7 @@
         // Also guard against phantom releases (< 20ms)
         if (duration < 20) return;
 
-        const element = duration < dot * 2.0 ? '.' : '-';
+        const element = duration < dot * 2.5 ? '.' : '-';
         this._buffer += element;
         this._onBufferChange();
 
